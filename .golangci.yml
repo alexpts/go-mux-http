@@ -1,0 +1,29 @@
+run:
+  skip-dirs:
+    - mux/tests
+    - docs
+
+linters:
+  #ignore-test: true
+  enable-all: true
+  disable:
+    - paralleltest
+    - varnamelen
+    - nlreturn
+    - scopelint
+    - exhaustivestruct
+    - maligned
+    - golint
+    - varcheck
+    - interfacer
+    - structcheck
+    - deadcode
+    - nosnakecase
+    - ifshort
+    - goerr113
+    - exhaustruct
+    - depguard
+    - revive
+    - stylecheck
+    - gci
+    - forbidigo

@@ -1,0 +1,19 @@
+:root {
+  --content-width: 1200px;
+  --sidebar-width: 18rem;
+
+  --c-bg-lighter: #ddfced;
+}
+
+html.dark {
+  --c-bg-lighter: rgba(58, 166, 117, 0.13)
+}
+
+html.dark div[class*=language-] .highlight-lines {
+  background: rgba(22, 24, 26, 0.45)
+}
+
+img[src$="centerme"] {
+  display:block;
+  margin: 0 auto;
+}

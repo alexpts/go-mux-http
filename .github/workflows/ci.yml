@@ -1,0 +1,63 @@
+name: ci-tests
+
+on:
+  pull_request: {}
+  release: {}
+  push:
+    branches: [ master ]
+
+# @todo reuse via yaml
+#.x-strategy: &strategy
+#    matrix:
+#      go-version: [ 1.20.x ]
+#      #os: [ ubuntu-latest, macos-latest, windows-latest ]
+#      os: [ ubuntu-latest ]
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        go-version: [ 1.20.x ]
+        #os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest ]
+
+    name: unit tests - ${{ matrix.go-version }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - run: go version
+
+      - run: go mod verify
+
+      - name: Unit tests
+        run: go test -race -v -coverprofile=coverage.out -coverpkg github.com/alexpts/go-mux-http/... -covermode=atomic -timeout 2m ./mux/...
+      #- run: go tool cover -func=coverage.out -o=coverage.out
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version: [ 1.20.x ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          # Optional: `latest` to use the latest version
+          version: v1.53
+
