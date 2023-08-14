@@ -1,5 +1,8 @@
 # go-mux-http
 
+[![codecov](https://codecov.io/gh/alexpts/go-mux-http/branch/master/graph/badge.svg?token=lQGrGVDEUo)](https://codecov.io/gh/alexpts/go-mux-http)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexpts/go-mux-http)](https://goreportcard.com/report/github.com/alexpts/go-mux-http)
+
 Библиотека для запуска net/http Handler. (Порт библиотеки https://alexpts.github.io/go-next-docs/ совместимый с net/http вместо fastHttp)
 
 [Документация](https://alexpts.github.io/go-mux-http/)

@@ -17,6 +17,14 @@ func createRequest(method string, path string) *http.Request {
 	return httptest.NewRequest(method, path, nil)
 }
 
+// runApp run application on http `method` and `path`
+func runApp(app *mux.App, method string, path string) *httptest.ResponseRecorder {
+	w := httptest.NewRecorder()
+	app.ServeHTTP(w, createRequest(method, path))
+
+	return w
+}
+
 func createApp() mux.App {
 	return mux.NewApp(nil, nil)
 }
@@ -28,10 +36,19 @@ func TestMinimalApp(t *testing.T) {
 		_, _ = writer.Write([]byte("Hello"))
 	})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/api/`))
-
+	w := runApp(&app, `GET`, `/api/`)
 	assert.Equal(t, `Hello`, w.Body.String())
+}
+
+func TestHandleFunc(t *testing.T) {
+	app := createApp()
+
+	app.HandleFunc("/admin/", Layer{}, func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = writer.Write([]byte("Is Admin"))
+	})
+
+	w := runApp(&app, `GET`, `/admin/`)
+	assert.Equal(t, `Is Admin`, w.Body.String())
 }
 
 func TestMultiHandler(t *testing.T) {
@@ -54,9 +71,7 @@ func TestMultiHandler(t *testing.T) {
 		},
 	)
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/api/`))
-
+	w := runApp(&app, `GET`, `/api/`)
 	assert.Equal(t, `Hello World Alex`, w.Body.String())
 }
 
@@ -80,8 +95,7 @@ func TestMultiLayers(t *testing.T) {
 		),
 	)
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/`))
+	w := runApp(&app, `GET`, `/`)
 	assert.Equal(t, `Hello World`, w.Body.String())
 }
 
@@ -97,8 +111,7 @@ func TestLayerPriority(t *testing.T) {
 			app.ServeHTTP(writer, request)
 		})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/`))
+	w := runApp(&app, `GET`, `/`)
 	assert.Equal(t, `2-1-`, w.Body.String())
 }
 
@@ -139,8 +152,7 @@ func TestFilterByHttpMethod(t *testing.T) {
 			_, _ = writer.Write([]byte(`4-`))
 		})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/`))
+	w := runApp(&app, `GET`, `/`)
 	assert.Equal(t, `1-3-4-`, w.Body.String())
 }
 
@@ -160,9 +172,7 @@ func TestFilterByPath(t *testing.T) {
 			_, _ = writer.Write([]byte(`layer3-`))
 		})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/admin/`))
-
+	w := runApp(&app, `GET`, `/admin/`)
 	assert.Equal(t, `layer2-layer3-`, w.Body.String())
 }
 
@@ -177,8 +187,7 @@ func TestMatchUrlParam(t *testing.T) {
 		}
 	})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/city/london/`))
+	w := runApp(&app, `GET`, `/city/london/`)
 	assert.Equal(t, "london", w.Body.String())
 }
 
@@ -232,8 +241,7 @@ func TestFastHttpMethod(t *testing.T) {
 				app.Delete(`/`, Layer{}, handler)
 			}
 
-			w := httptest.NewRecorder()
-			app.ServeHTTP(w, createRequest(provider.method, `/`))
+			w := runApp(&app, provider.method, `/`)
 			assert.Equal(t, provider.expected, w.Body.String())
 		})
 	}
@@ -268,16 +276,13 @@ func TestMount(t *testing.T) {
 		Mount(reuseApp, ``)
 
 	// asserts
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/api/v1/users/`))
+	w := runApp(&app, `GET`, `/api/v1/users/`)
 	assert.Equal(t, `api v1 md; api v1 - users`, w.Body.String())
 
-	w = httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/api/v2/users/`))
+	w = runApp(&app, `GET`, `/api/v2/users/`)
 	assert.Equal(t, `api v2 - users`, w.Body.String())
 
-	w = httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/users/`))
+	w = runApp(&app, `GET`, `/users/`)
 	assert.Equal(t, `reuse - users`, w.Body.String())
 }
 
@@ -300,7 +305,7 @@ func TestDelegateFromOldMux(t *testing.T) {
 	})
 
 	w := httptest.NewRecorder()
-	oldMux.ServeHTTP(w, createRequest(`GET`, `/`))
+	oldMux.ServeHTTP(w, createRequest(`GET`, `/`)) // run old mux
 	assert.Equal(t, "old mux / app mux", w.Body.String())
 }
 
@@ -318,8 +323,7 @@ func TestDelegateToOldMux(t *testing.T) {
 		oldMux.ServeHTTP(writer, request)
 	})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/`))
+	w := runApp(&app, `GET`, `/`)
 	assert.Equal(t, "app mux / old mux", w.Body.String())
 }
 
@@ -345,12 +349,10 @@ func TestRestrictionParam(t *testing.T) {
 			_, _ = writer.Write([]byte(`other`))
 		})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/users/alex/`))
+	w := runApp(&app, `GET`, `/users/alex/`)
 	assert.Equal(t, `user: alex`, w.Body.String())
 
-	w = httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/users/alex-2/`))
+	w = runApp(&app, `GET`, `/users/alex-2/`)
 	assert.Equal(t, `other`, w.Body.String())
 }
 
@@ -370,11 +372,9 @@ func TestInlineRestriction(t *testing.T) {
 			_, _ = writer.Write([]byte(`other`))
 		})
 
-	w := httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/users/alex/`))
+	w := runApp(&app, `GET`, `/users/alex/`)
 	assert.Equal(t, `user: alex`, w.Body.String())
 
-	w = httptest.NewRecorder()
-	app.ServeHTTP(w, createRequest(`GET`, `/users/alex-2/`))
+	w = runApp(&app, `GET`, `/users/alex-2/`)
 	assert.Equal(t, `other`, w.Body.String())
 }
