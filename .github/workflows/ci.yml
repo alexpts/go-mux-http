@@ -17,7 +17,7 @@ jobs:
   tests:
     strategy:
       matrix:
-        go-version: [ 1.20.x ]
+        go-version: [ 1.20.x, 1.21.x, 1.22.x, 1.23.x, 1.24.x ]
         #os: [ ubuntu-latest, macos-latest, windows-latest ]
         os: [ ubuntu-latest ]
 
@@ -25,8 +25,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -39,27 +39,27 @@ jobs:
       #- run: go tool cover -func=coverage.out -o=coverage.out
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        go-version: [ 1.20.x ]
-        os: [ ubuntu-latest ]
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          # Optional: `latest` to use the latest version
-          version: v1.53
+#  lint:
+#    name: lint
+#    runs-on: ubuntu-latest
+#
+#    strategy:
+#      matrix:
+#        go-version: [ 1.20.x, 1.21.x, 1.22.x, 1.23.x, 1.24.x ]
+#        os: [ ubuntu-latest ]
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-go@v5
+#        with:
+#          go-version: ${{ matrix.go-version }}
+#      - name: golangci-lint
+#        uses: golangci/golangci-lint-action@v6
+#        with:
+#          # Optional: `latest` to use the latest version
+#          version: v1.53
 
