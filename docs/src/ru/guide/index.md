@@ -10,8 +10,8 @@ Go-Mux-HTTP - это микроприложение для обработки ne
 
 Минимальное приложение выглядит так:
 
-[GitHub](https://github.com/alexpts/go-mux-http/tree/master/mux/app_test.go#L21)
-@[code{0-33} go{22-33}](../../../../mux/tests/app_test.go)
+[GitHub](https://github.com/alexpts/go-mux-http/tree/master/mux/tests/app_test.go#L32)
+@[code{0-41} go{32-41}](../../../../mux/tests/app_test.go)
 
 ## Глоссарий
 

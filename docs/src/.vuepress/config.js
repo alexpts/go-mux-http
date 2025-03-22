@@ -4,6 +4,8 @@ import { defaultTheme } from '@vuepress/theme-default'
 import { searchPlugin } from '@vuepress/plugin-search'
 import { nprogressPlugin } from '@vuepress/plugin-nprogress'
 import umlPlugin from 'markdown-it-plantuml'
+import { viteBundler } from '@vuepress/bundler-vite'
+import { defineUserConfig } from 'vuepress'
 
 let ruThemeConfig = {
     selectLanguageText: 'Языки',
@@ -28,13 +30,19 @@ let enThemeConfig = {
     ],
 };
 
-module.exports = {
+
+module.exports = defineUserConfig({
     base: '/go-mux-http/', // github pages sub-url
 
     plugins: [
         searchPlugin(),
         nprogressPlugin()
     ],
+
+    bundler: viteBundler({
+        viteOptions: {},
+        vuePluginOptions: {},
+    }),
 
     locales: {
         '/ru/': {
@@ -64,4 +72,4 @@ module.exports = {
     extendsMarkdown: (md) => {
         md.use(umlPlugin);   // required by PalmUML
     },
-}
+})

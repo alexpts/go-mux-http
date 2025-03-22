@@ -44,4 +44,10 @@ func main() {
 	app.ServeHTTP(w, req)
 
 	fmt.Println(w.Body.String())
+
+	// listenHttp(&app)
+}
+
+func listenHttp(app *mux.App) {
+	_ = http.ListenAndServe(":8080", app)
 }
